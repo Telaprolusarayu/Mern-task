@@ -1,0 +1,104 @@
+1.$match:
+
+db.orders.aggregate([
+  { $match: { status: "shipped" } }
+]);
+
+2.$group:
+
+db.orders.aggregate([
+  { $group: { _id: "$customerId", totalAmount: { $sum: "$amount" } } }
+]);
+
+3.$sort:
+
+db.orders.aggregate([
+  { $sort: { orderDate: -1 } }
+]);
+
+4.$project:
+
+db.orders.aggregate([
+  { $project: { orderId: 1, customerId: 1, totalAmount: { $multiply: ["$quantity", "$price"] } } }
+]);
+
+5.$lookup:
+
+db.orders.aggregate([
+  { $lookup: {
+    from: "customers",
+    localField: "customerId",
+    foreignField: "_id",
+    as: "customerInfo"
+  } }
+]);
+
+6.$unwind:
+
+db.orders.aggregate([
+  { $unwind: "$items" }
+]);
+
+7.$addFields:
+
+db.orders.aggregate([
+  { $addFields: { totalAmount: { $multiply: ["$quantity", "$price"] } } }
+]);
+
+8.$replaceRoot:
+
+db.orders.aggregate([
+  { $replaceRoot: { newRoot: "$customerInfo" } }
+]);
+
+9.$facet:
+
+db.orders.aggregate([
+  { $facet: {
+    "totalSales": [ { $group: { _id: null, total: { $sum: "$amount" } } } ],
+    "orderCounts": [ { $group: { _id: null, count: { $sum: 1 } } } ]
+  } }
+]);
+
+10.$bucket:
+
+db.orders.aggregate([
+  { $bucket: {
+    groupBy: "$amount",
+    boundaries: [0, 50, 100, 200, 500],
+    default: "Other",
+    output: {
+      count: { $sum: 1 },
+      totalAmount: { $sum: "$amount" }
+    }
+  } }
+]);
+
+db.customer.updateOne({age: 30},{$set:{"name":"abc"}})
+db.customer.updateOne({"name": "lmn"},{$set:{email: "lmn@gmail.com",address:"IND"}})
+db.customer.updateMany({"name":"abc"},{$set: {age:25,dob: 2003-07-09}})
+db.customer.updateMany({name:"abc",name:"def"},{$set: {age:26}})
+db.customer.updateMany({},{$set: {address:"AUS"}})
+db.customer.updateOne({name:"abc"},{$set:{aadhar: "123174314",pan: "haqed34waq"}},{upsert:true})
+db.customer.updateOne({age: {$lt: 25}},{$set: {address: 'IND'}})
+db.customer.find({age: {$ne: 26}})
+
+$lt = less than operator 
+$gt = greater than operator 
+$lte = lessthan or equal to operator
+$gte = greater than or equal to operator 
+$eq = equals to 
+$ne = not equals to
+$in = in operator
+$nin = not in operator  
+
+db.customer.updateMany({},{$set:{$inc: {salary:2000}}) -->increments the salary of all documents
+db.customer.updateMany({},{$set: {city:[{hobbies: "Swimming", "reading"}]}})
+db.customer.updateMany({},{$set: {hobbies:["Playing", "reading"]}})
+db.customer.find({hobbies: {$all: ["Playing", "reading"]}})
+db.customer.find().limit(3)
+db.customer.find().sort({salary:1}) --> Sorts in ascending order based on salary
+db.customer.find().sort({salary:-1}) --> Sorts in descending order based on salary
+db.customer.find().count() --> Counts the no of records present in collection
+db.customer.find({age:26}).count() --> Counts the records whose age=26
+db.customer.find().limit(3).sort({salary:-1}) --> gives top three records based on salary
