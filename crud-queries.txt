@@ -6,7 +6,7 @@ db.student.insertOne({
   email: "sarayu@gmail.com",
   place: "Andhra",
   Gender: "Female",
-  pincode: 522005
+  pincode: 522002
 });
 
 db.student.insertMany([
